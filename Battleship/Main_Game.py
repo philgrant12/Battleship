@@ -2,6 +2,7 @@
 from tkinter import ttk
 from tkinter import *
 from random import randint
+import time
 
 
 class CustomDefaultWindow:
@@ -26,7 +27,7 @@ class CustomDefaultWindow:
         self.ship_size = []
         self.sets = []
         self.game_mode = IntVar()
-
+        self.skill_level = StringVar()
 
     def one(self):
         self.game_mode = 1
@@ -40,7 +41,7 @@ class CustomDefaultWindow:
 
     def custom(self):
         self.custom_bool = True
-        self.sets = [1, 1, [1, 1], 1, self.game_mode]
+        self.sets = [1, 1, [1, 1], 1, self.game_mode, self.skill_level]
         self.top.destroy()
 
     def defaults(self):
@@ -49,7 +50,8 @@ class CustomDefaultWindow:
         self.turns = 0
         self.icon_size = 1
         self.ship_size = [5, 4, 3, 3, 2]
-        self.sets = [int(self.board_size), int(self.turns), self.ship_size, self.icon_size, self.game_mode]
+        self.skill_level = "easy"
+        self.sets = [int(self.board_size), int(self.turns), self.ship_size, self.icon_size, self.game_mode, self.skill_level]
         self.top.destroy()
         root.deiconify()
 
@@ -149,15 +151,15 @@ class TwoPlayerBoatInput:
         print("Clear Ship")
 
     def submit(self):
-        print("Submit")
+        """ print("Submit")
         if not self.ships:
             self.final_user_ships = self.user_ship_positions
             print(self.final_user_ships)
         else:
             print("Invalid Ship Co-ordinates")
         """
-        self.final_user_ships = [1, 2, 3, 4, 5]
-        print("Submit")"""
+        self.final_user_ships = [[[0, 0], [0, 1], [0, 2]], [[1, 0], [1, 1], [1, 2]]]
+        print("Submit")
         self.top.destroy()
         root.deiconify()
 
@@ -306,7 +308,8 @@ def on_open():
     if main_page.custom_bool:
         settings = SettingsWindow(root)
         root.wait_window(settings.top)
-        user_settings = [int(settings.board_size), int(settings.turns), settings.ship_size, settings.icon_size]
+        # user_settings = [settings.sets]
+        user_settings = [int(settings.board_size), int(settings.turns), settings.ship_size, settings.icon_size, settings.skill_level]
 
     return user_settings
 
@@ -339,15 +342,111 @@ def user_guess(pos):
             print("You missed my battleships!")
             board_cpu[guess_row][guess_col] = "M"
 
+    print(pos)
+
     if hit_bool:
-        btn_dict[pos].configure(image=hit_pic)
+        btn_dict_cpu_board[pos].configure(image=hit_pic)
     else:
-        btn_dict[pos].configure(image=miss_pic)
+        btn_dict_cpu_board[pos].configure(image=miss_pic)
+
+    time.sleep(1) # Wait 2 seconds
+
+    if skill_level == "easy":
+        new_cpu_guess = random_pos()
+    elif skill_level == "medium":
+        new_cpu_guess = cpu_medium_guess
 
 
-def print_ship(ship):
-    for l in ship:
+    if new_cpu_guess not in cpu_prev_guess:
+        cpu_prev_guess.append(new_cpu_guess)
+        cpu_random_guess(new_cpu_guess)
+
+    print(cpu_prev_guess)
+
+"""
+def cpu_guess(pos):
+    guess = alpha_to_list[pos]
+    hit = 0
+    hit_ship = 0
+    guess_row = guess[0]
+    guess_col = guess[1]
+    if board_user_visual[guess_row][guess_col] == "X":
+        hit_bool = True
+        print("You hit my battleships!")
+        for c in range(len(cpu_ship_list)):
+            for d in range(len(cpu_ship_list[c])):
+                ship = cpu_ship_list[c]
+                current_ship_pos = ship[d]
+                if guess == current_ship_pos:
+                    hit = 1
+                    hit_ship = c
+                    break
+        if hit == 1:
+            cpu_ship_list[hit_ship].remove(guess)
+
+    else:
+        hit_bool = False
+        if board_user[guess_row][guess_col] == "M" or board_user[guess_row][guess_col] == "H":
+            print("You guessed that one already.")
+        else:
+            print("You missed my battleships!")
+            board_user[guess_row][guess_col] = "M"
+
+    if hit_bool:
+        btn_dict_user_board[pos].configure(image=hit_pic)
+    else:
+        btn_dict_user_board[pos].configure(image=miss_pic)
+"""
+
+def cpu_random_guess(cpu_position_guess):
+    letter_guess = list_to_alpha(cpu_position_guess)
+    print(cpu_position_guess)
+    guess = cpu_position_guess
+    hit = 0
+    hit_ship = 0
+    guess_row = guess[0]
+    guess_col = guess[1]
+    if board_user_visual[guess_row][guess_col] == "X":
+        hit_bool = True
+        print("You hit my battleships!")
+        for c in range(len(cpu_ship_list)):
+            for d in range(len(cpu_ship_list[c])):
+                ship = cpu_ship_list[c]
+                current_ship_pos = ship[d]
+                if guess == current_ship_pos:
+                    hit = 1
+                    hit_ship = c
+                    break
+        if hit == 1:
+            cpu_ship_list[hit_ship].remove(guess)
+
+    else:
+        hit_bool = False
+        if board_user[guess_row][guess_col] == "M" or board_user[guess_row][guess_col] == "H":
+            print("You guessed that one already.")
+        else:
+            print("You missed my battleships!")
+            board_user[guess_row][guess_col] = "M"
+
+    # print("letter_guess:", letter_guess)
+
+
+    if hit_bool:
+        # btn_dict_user_board[pos].configure(image=hit_pic)
+        btn_dict_user_board[letter_guess].configure(image=hit_pic)
+    else:
+        # btn_dict_user_board[pos].configure(image=miss_pic)
+        btn_dict_user_board[letter_guess].configure(image=miss_pic)
+
+
+def print_cpu_ship(cpu_ship):
+    for l in cpu_ship:
         board_cpu_visual[l[0]][l[1]] = "X"
+
+
+def print_user_ship(user_ship):
+    for l in user_ship:
+        board_user_visual[l[0]][l[1]] = "X"
 
 
 def print_board(board_to_print):
@@ -446,7 +545,7 @@ def place_all_ships(ship_sizes):
         for i in ship_next:
             taken_positions.append(i)
         del(ship_sizes[0])
-        print_ship(ships[b])
+        print_cpu_ship(ships[b])
         b += 1
     return ships
 
@@ -466,7 +565,7 @@ def get_board_positions():
     return positions_func
 
 
-def get_btn_dict(positions_func, board_size_func, command_function):
+def get_btn_dict(button_frame, positions_func, board_size_func, command_function):
     btn_dict_func = {}
     c = 1
     r = 1
@@ -474,13 +573,40 @@ def get_btn_dict(positions_func, board_size_func, command_function):
         # pass each button's text to a function
         action = lambda x = pos: command_function(x)
         # create the buttons and assign to pos:button-object dict pair
-        btn_dict_func[pos] = Button(mainframe, image=ocean_pic, command=action)
+        btn_dict_func[pos] = Button(button_frame, image=ocean_pic, command=action)
         btn_dict_func[pos].grid(row=r, column=c, pady=0, padx=0)
         c += 1
         if c == board_size_func + 1:
             c = 1
             r += 1
     return btn_dict_func
+
+
+def get_label_dict(label_frame, positions_func, board_size_func):
+    lbl_dict_func = {}
+    c = 1
+    r = 1
+    for pos in positions_func:
+        # create the buttons and assign to pos:button-object dict pair
+        lbl_dict_func[pos] = Label(label_frame, image=ocean_pic)
+        lbl_dict_func[pos].grid(row=r, column=c, pady=0, padx=0)
+        c += 1
+        if c == board_size_func + 1:
+            c = 1
+            r += 1
+    return lbl_dict_func
+
+
+def list_to_alpha(num_pos):
+    num_pos_row = num_pos[0]
+    num_pos_col = num_pos[1]
+
+    let_to_words = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K',
+                    11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T'}
+
+    alpha_pos = let_to_words[num_pos_row] + str(num_pos_col + 1)
+
+    return alpha_pos
 
 
 def get_alpha_to_list(positions_func, board_size_func):
@@ -512,9 +638,16 @@ root = Tk()
 root.title("Battleship")
 
 mainframe = ttk.Frame(root, padding="10 10 10 10")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+mainframe.pack(side=LEFT)
+# mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
 mainframe.columnconfigure(0, weight=1)
 mainframe.rowconfigure(0, weight=1)
+
+rightframe = ttk.Frame(root, padding="10 10 10 10")
+# rightframe.grid(column=0, row=0, sticky=(N, W, E, S))
+rightframe.pack(side=LEFT)
+rightframe.columnconfigure(0, weight=1)
+rightframe.rowconfigure(0, weight=1)
 
 # Game Info #
 user_ship_list = []
@@ -524,22 +657,35 @@ turns = info[1]
 user_ship_sizes = info[2]
 icon_setting = info[3]
 game_mode = info[4]
+skill_level = "easy"
 board_size_zero = board_size - 1
 ocean_pic, hit_pic, miss_pic = icon(icon_setting)
 
 # SetUp Board
 board_cpu = []
 board_cpu_visual = []
+board_user = []
+board_user_visual = []
 taken_positions = []
+cpu_prev_guess = []
 for x in range(board_size):
     board_cpu.append(["O"] * board_size)
     board_cpu_visual.append(["O"] * board_size)
+    board_user.append(["O"] * board_size)
+    board_user_visual.append(["O"] * board_size)
 
 # Develop Dictionaries based on board size
 positions = get_board_positions()
-btn_dict = get_btn_dict(positions, board_size, user_guess)
-alpha_to_list = get_alpha_to_list(positions, board_size)
+if game_mode == 1:
+    btn_dict_cpu_board = get_btn_dict(mainframe, positions, board_size, user_guess)
+elif game_mode == 2:
+    btn_dict_cpu_board = get_btn_dict(mainframe, positions, board_size, user_guess)
+    btn_dict_user_board = get_label_dict(rightframe, positions, board_size)
+    # print(user_ship_list)
+    for user_ship in user_ship_list:
+        print_user_ship(user_ship)
 
+alpha_to_list = get_alpha_to_list(positions, board_size)
 cpu_ship_list = place_all_ships(user_ship_sizes)
 
 # user_ship_list = []  # Must link to
