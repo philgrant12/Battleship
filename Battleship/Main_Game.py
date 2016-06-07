@@ -153,8 +153,9 @@ class TwoPlayerBoatInput:
     def submit(self):
 
         #self.final_user_ships = [[[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5]], [[3, 1], [3, 2], [3, 3], [3, 4], [3, 5]]]
-        self.final_user_ships = [[[5, 5], [5, 6], [5, 7]],  [[3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7]]]
+        # self.final_user_ships = [[[5, 5], [5, 6], [5, 7]],  [[3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7]]]
         # self.final_user_ships = [[3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7]]
+        self.final_user_ships = [[[0, 0], [1, 0]], [[9, 8], [9, 9]], [[9, 0], [9, 1]], [[0, 8], [0, 9]]]
         print("Submit")
         self.top.destroy()
         root.deiconify()
@@ -398,15 +399,25 @@ def cpu_medium_guess():
     global last_cpu_hit
 
     if cpu_hit_not_sunk:  # variable that ship is hit but not sunk
-        #prev_cpu_guess = cpu_prev_guess[len(cpu_prev_guess) - 1] ###MIMIC
-        #prev_col = prev_cpu_guess[1]   ###MIMIC
-        #prev_row = prev_cpu_guess[0]    ###MIMIC
-            #### get first hit position here?!?!?!?
         if len(cpu_hit_ship_pos) == 1:
             prev_col = cpu_hit_ship_pos[len(cpu_hit_ship_pos) - 1][1]
             prev_row = cpu_hit_ship_pos[len(cpu_hit_ship_pos) - 1][0]
             att_dir = rand_dir[randint(0, 3)]
-            if prev_row == 0 or att_dir in failed_dir:
+
+            # If initial hit position is a Corner
+            if prev_row == 0 and prev_col == 0:
+                while att_dir == "up" or att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == 0 and prev_col == board_size_zero:
+                while att_dir == "up" or att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero and prev_col == 0:
+                while att_dir == "down" or att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero and prev_col == board_size_zero:
+                while att_dir == "down" or att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == 0 or att_dir in failed_dir:
                 while att_dir == "up" or att_dir in failed_dir:
                     att_dir = rand_dir[randint(0, 3)]
             elif prev_row == board_size_zero or att_dir in failed_dir:
