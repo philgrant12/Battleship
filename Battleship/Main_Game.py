@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from tkinter import ttk
+from tkinter import font
 from tkinter import *
 from random import randint
+#from tkinter import tkFont
 import time
 
 
@@ -50,7 +52,7 @@ class CustomDefaultWindow:
         self.turns = 0
         self.icon_size = 1
         self.ship_size = [5, 4, 3, 3, 2]
-        self.skill_level = "expert"
+        self.skill_level = "hard"
         self.sets = [int(self.board_size), int(self.turns), self.ship_size, self.icon_size, self.game_mode, self.skill_level]
         self.top.destroy()
         root.deiconify()
@@ -297,7 +299,7 @@ class CpuShipSunk:
         top.wm_attributes("-topmost", 1)
         #top.minsize(width=100, height=30)
         #top.maxsize(width=100, height=30)
-        top.after(3000, lambda: top.destroy())  # Destroy the widget after 3 seconds
+        top.after(1000, lambda: top.destroy())  # Destroy the widget after 1 seconds
         self.Size_Label = Label(top, text='You Have Sunk CPU Ship')
         self.Size_Label.pack()
 
@@ -309,7 +311,7 @@ class UserShipSunk:
         top.wm_attributes("-topmost", 1)
         #top.minsize(width=100, height=30)
         #top.maxsize(width=100, height=30)
-        top.after(3000, lambda: top.destroy())  # Destroy the widget after 3 seconds
+        top.after(1000, lambda: top.destroy())  # Destroy the widget after 1 seconds
         self.Size_Label = Label(top, text='CPU Has Sunk Your Ship')
         self.Size_Label.pack()
 
@@ -322,8 +324,21 @@ class UserWins:
         #top.minsize(width=100, height=30)
         #top.maxsize(width=100, height=30)
         #top.after(3000, lambda: top.destroy())  # Destroy the widget after 3 seconds
-        self.Size_Label = Label(top, text='You WIN!!')
-        self.Size_Label.pack()
+        self.Win_Label = Label(top, text='You WIN!!')
+        self.Win_Label.pack()
+        self.Restart_Button = Button(top, text='Restart', command=self.restart)
+        self.Restart_Button.pack(side=LEFT)
+        self.Close_Button = Button(top, text='Exit', command=self.exit)
+        self.Close_Button.pack(side=LEFT)
+
+    def exit(self):
+        print("exit")
+        root.destroy()
+        # self.top.destroy()
+
+    def restart(self):
+        restart()
+        print("restart")
 
 
 class CPUWins:
@@ -334,8 +349,22 @@ class CPUWins:
         #top.minsize(width=100, height=30)
         #top.maxsize(width=100, height=30)
         #top.after(3000, lambda: top.destroy())  # Destroy the widget after 3 seconds
-        self.Size_Label = Label(top, text='You LOSE!!')
-        self.Size_Label.pack()
+        self.Lose_Label = Label(top, text='You LOSE!!')
+        self.Lose_Label.pack()
+        self.Restart_Button = Button(top, text='Restart', command=self.restart)
+        self.Restart_Button.pack(side=LEFT)
+        self.Close_Button = Button(top, text='Exit', command=self.exit)
+        self.Close_Button.pack(side=LEFT)
+
+    def exit(self):
+        print("exit")
+        root.destroy()
+        # self.top.destroy()
+
+    def restart(self):
+        restart()
+        print("restart")
+        # on_open()
 
 
 def on_open():
@@ -355,9 +384,40 @@ def on_open():
     return user_settings
 
 
+def sunk_ship(player, ship_number):
+    if player == "user":
+        ship_sunk = user_ship_name_list[ship_number]
+        del(user_ship_name_list[ship_number])
+        if ship_sunk == "Carrier":
+            Carrier_CPU_Pic.configure(image=Carrier_CPU_Hit)
+        elif ship_sunk == "Battleship":
+            Battleship_CPU_Pic.configure(image=Battleship_CPU_Hit)
+        elif ship_sunk == "Destroyer":
+            Destroyer_CPU_Pic.configure(image=Destroyer_CPU_Hit)
+        elif ship_sunk == "Submarine":
+            Submarine_CPU_Pic.configure(image=Submarine_CPU_Hit)
+        elif ship_sunk == "Patrol":
+            Patrol_CPU_Pic.configure(image=Patrol_CPU_Hit)
+
+    elif player == "cpu":
+        ship_sunk = cpu_ship_name_list[ship_number]
+        del (cpu_ship_name_list[ship_number])
+        if ship_sunk == "Carrier":
+            Carrier_USER_Pic.configure(image=Carrier_USER_Hit)
+        elif ship_sunk == "Battleship":
+            Battleship_USER_Pic.configure(image=Battleship_USER_Hit)
+        elif ship_sunk == "Destroyer":
+            Destroyer_USER_Pic.configure(image=Destroyer_USER_Hit)
+        elif ship_sunk == "Submarine":
+            Submarine_USER_Pic.configure(image=Submarine_USER_Hit)
+        elif ship_sunk == "Patrol":
+            Patrol_USER_Pic.configure(image=Patrol_USER_Hit)
+
+
 def user_guess(pos):
     guess = alpha_to_list[pos]
     hit_bool = False
+    game_over = False
     for ship in range(len(cpu_ship_list)):
         if guess in cpu_ship_list[ship]:
             hit_bool = True
@@ -367,36 +427,40 @@ def user_guess(pos):
                 print("You sunk CPU's ship")
                 test_page = CpuShipSunk(root)
                 root.wait_window(test_page.top)
+                sunk_ship("user", ship)
                 del(cpu_ship_list[ship])
                 print(cpu_ship_list)
             break
-    if guess in cpu_ship_list:
+    """if guess in cpu_ship_list:
         hit_bool = True
         print("You hit CPU's battleships!")
-        cpu_ship_list.remove(guess)
-        if not cpu_ship_list:
-            print("You sunk all CPU's ships")
-            test_page = UserWins(root)
-            root.wait_window(test_page.top)
+        cpu_ship_list.remove(guess)"""
+    if not cpu_ship_list:
+        print("You sunk all CPU's ships")
+        game_over = True
+        test_page = UserWins(root)
+        root.wait_window(test_page.top)
 
-    if hit_bool:
-        btn_dict_cpu_board[pos].configure(image=hit_pic)
-    else:
-        btn_dict_cpu_board[pos].configure(image=miss_pic)
+    if not game_over:
+        if hit_bool:
+            btn_dict_cpu_board[pos].configure(image=hit_pic)
+        else:
+            btn_dict_cpu_board[pos].configure(image=miss_pic)
 
-    while True:
-        if skill_level == "easy":
-            new_cpu_guess = random_pos()
-        elif skill_level == "medium":
-            new_cpu_guess = cpu_medium_guess()
-        elif skill_level == "expert":
-            new_cpu_guess = cpu_expert_guess()
-        if new_cpu_guess not in cpu_prev_guess:
-            break
+    if game_mode == 2:
+        while True:
+            if skill_level == "easy":
+                new_cpu_guess = random_pos()
+            elif skill_level == "medium":
+                new_cpu_guess = cpu_medium_guess()
+            elif skill_level == "hard":
+                new_cpu_guess = cpu_hard_guess()
+            if new_cpu_guess not in cpu_prev_guess:
+                break
 
-    # print("new cpu guess: ", new_cpu_guess)
-    cpu_prev_guess.append(new_cpu_guess)
-    cpu_guess(new_cpu_guess)
+        # print("new cpu guess: ", new_cpu_guess)
+        cpu_prev_guess.append(new_cpu_guess)
+        cpu_guess(new_cpu_guess)
 
     # print("prev cpu guesses: ", cpu_prev_guess)
 
@@ -426,6 +490,7 @@ def cpu_guess(cpu_position_guess):
                 print("CPU sunk your ship")
                 test_page = UserShipSunk(root)
                 root.wait_window(test_page.top)
+                sunk_ship("cpu", ship)
                 del (user_ship_list[ship])
                 smallest_ship_remaining = 5
                 for ship in range(len(user_ship_list)):
@@ -544,7 +609,7 @@ def cpu_medium_guess():
     return next_cpu_guess
 
 
-def cpu_expert_guess():
+def cpu_hard_guess():
     global cpu_prev_hit_dir
     global failed_dir
     global switch_direction
@@ -770,7 +835,7 @@ def get_label_dict(label_frame, positions_func, board_size_func):
     for pos in positions_func:
         # create the buttons and assign to pos:button-object dict pair
         lbl_dict_func[pos] = Label(label_frame, image=ocean_pic)
-        lbl_dict_func[pos].grid(row=r, column=c, pady=0, padx=0)
+        lbl_dict_func[pos].grid(row=r, column=c, pady=1, padx=1)
         c += 1
         if c == board_size_func + 1:
             c = 1
@@ -810,18 +875,65 @@ def icon(icon_decision):
     return [ocean_picture, hit_picture, miss_picture]
 
 
+def restart():
+
+    #CHECK WHAT GETS CHANGED. THEN RESET THOSE VALUES.
+    global user_ship_list
+    user_ship_list = []
+    info = on_open()
+    board_size = info[0]
+    turns = info[1]
+    user_ship_sizes = info[2]
+    icon_setting = info[3]
+    game_mode = info[4]
+    skill_level = info[5]
+    board_size_zero = board_size - 1
+    ocean_pic, hit_pic, miss_pic = icon(icon_setting)
+    taken_positions = []  # List of Ships positions. Used for CPU placing ships, prevents overlap of ships
+    cpu_prev_guess = []  # List of positions the cpu has guest
+    cpu_hit_ship_pos = []
+    cpu_prev_result = ""  # Holds results of last cpu guess
+    cpu_hit_not_sunk = False
+    cpu_prev_hit_dir = []
+    failed_dir = []
+    last_cpu_hit = []
+    smallest_ship_remaining = 2
+    switch_direction = False
+
+    positions = get_board_positions()
+
+    if game_mode == 1:
+        btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
+    elif game_mode == 2:
+        btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
+        btn_dict_user_board = get_label_dict(user_ship_frame, positions, board_size)
+
+    alpha_to_list = get_alpha_to_list(positions, board_size)
+    cpu_ship_list = place_all_ships(user_ship_sizes)
+
+    print("CPU SHIPS: ", cpu_ship_list)
+    print("Player SHIPS: ", user_ship_list)
+    num_ships_sunk = 0
+
+
 root = Tk()
 root.title("Battleship")
+root.configure(background='black')
 
-mainframe = ttk.Frame(root, padding="10 10 10 10")
-mainframe.pack(side=LEFT)
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
+upperframe = ttk.Frame(root, padding="1 1 1 1")
+upperframe.pack(side=TOP)
+upperframe.columnconfigure(0, weight=1)
+upperframe.rowconfigure(0, weight=1)
 
-rightframe = ttk.Frame(root, padding="10 10 10 10")
-rightframe.pack(side=LEFT)
-rightframe.columnconfigure(0, weight=1)
-rightframe.rowconfigure(0, weight=1)
+cpu_ship_frame = ttk.Frame(root, padding="10 10 10 10")
+cpu_ship_frame.pack(side=LEFT)
+cpu_ship_frame.columnconfigure(0, weight=1)
+cpu_ship_frame.rowconfigure(0, weight=1)
+
+user_ship_frame = ttk.Frame(root, padding="10 10 10 10")
+user_ship_frame.pack(side=LEFT)
+user_ship_frame.columnconfigure(0, weight=1)
+user_ship_frame.rowconfigure(0, weight=1)
 
 # Game Info #
 user_ship_list = []
@@ -834,6 +946,129 @@ game_mode = info[4]
 skill_level = info[5]
 board_size_zero = board_size - 1
 ocean_pic, hit_pic, miss_pic = icon(icon_setting)
+cpu_ship_name_list = ["Carrier", "Battleship", "Destroyer", "Submarine", "Patrol" ]
+user_ship_name_list = ["Carrier", "Battleship", "Destroyer", "Submarine", "Patrol" ]
+
+# Upper Game Labels
+"""
+label_frame = ttk.Frame(upperframe, padding="1 1 1 1")
+label_frame.pack(side=TOP)
+CPU_label = Label(label_frame, text="CPU SHIPS", padx=150)
+CPU_label.pack(side=LEFT)
+USER_label = Label(label_frame, text="User SHIPS", padx=150)
+USER_label.pack(side=LEFT)
+"""
+
+Carrier_CPU_NoHit = PhotoImage(file="Aircraft_carrier_5_cpu.gif")
+Battleship_CPU_NoHit = PhotoImage(file="Battleship_4_cpu.gif")
+Destroyer_CPU_NoHit = PhotoImage(file="Destroyer_3_cpu.gif")
+Submarine_CPU_NoHit = PhotoImage(file="Submarine_3_cpu.gif")
+Patrol_CPU_NoHit = PhotoImage(file="Patrol_Boat_2_cpu.gif")
+Carrier_USER_NoHit = PhotoImage(file="Aircraft_carrier_5_user.gif")
+Battleship_USER_NoHit = PhotoImage(file="Battleship_4_user.gif")
+Destroyer_USER_NoHit = PhotoImage(file="Destroyer_3_user.gif")
+Submarine_USER_NoHit = PhotoImage(file="Submarine_3_user.gif")
+Patrol_USER_NoHit = PhotoImage(file="Patrol_Boat_2_user.gif")
+Carrier_CPU_Hit = PhotoImage(file="Aircraft_carrier_5_cpu_hit.gif")
+Battleship_CPU_Hit = PhotoImage(file="Battleship_4_cpu_hit.gif")
+Destroyer_CPU_Hit = PhotoImage(file="Destroyer_3_cpu_hit.gif")
+Submarine_CPU_Hit = PhotoImage(file="Submarine_3_cpu_hit.gif")
+Patrol_CPU_Hit = PhotoImage(file="Patrol_Boat_2_cpu_hit.gif")
+Carrier_USER_Hit = PhotoImage(file="Aircraft_carrier_5_user_hit.gif")
+Battleship_USER_Hit = PhotoImage(file="Battleship_4_user_hit.gif")
+Destroyer_USER_Hit = PhotoImage(file="Destroyer_3_user_hit.gif")
+Submarine_USER_Hit = PhotoImage(file="Submarine_3_user_hit.gif")
+Patrol_USER_Hit = PhotoImage(file="Patrol_Boat_2_user_hit.gif")
+
+info_frame = ttk.Frame(upperframe, padding="1 1 1 1")
+info_frame.pack(side=TOP)
+
+
+cpu_stats_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+cpu_stats_frame.pack(side=LEFT)
+cpu_stats_frame_title = ttk.Frame(cpu_stats_frame, padding="1 1 1 1")
+cpu_stats_frame_title.pack(side=TOP)
+cpu_stats_frame_main = ttk.Frame(cpu_stats_frame, padding="1 1 1 1")
+cpu_stats_frame_main.pack(side=TOP)
+cpu_stats_frame_left = ttk.Frame(cpu_stats_frame_main, padding="1 1 1 1")
+cpu_stats_frame_left.pack(side=LEFT)
+cpu_stats_frame_right = ttk.Frame(cpu_stats_frame_main, padding="1 1 1 1")
+cpu_stats_frame_right.pack(side=LEFT)
+
+number_of_user_hits = 0
+number_of_user_misses = 0
+TitleFont = font.Font(family='Helvetica', size=30, weight='bold', underline=1)
+Hit_Miss_Font = font.Font(family='Times', size=17, weight='bold', underline=1)
+Counter_Font = font.Font(family='Times', size=13)
+user_label = Label(cpu_stats_frame_title, text="User", font=TitleFont)
+user_label.pack()
+user_label = Label(cpu_stats_frame_left, text="Hits", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(cpu_stats_frame_left, text=str(number_of_user_hits), font=Counter_Font)
+user_label.pack()
+user_label = Label(cpu_stats_frame_right, text="Misses", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(cpu_stats_frame_right, text=str(number_of_user_misses), font=Counter_Font)
+user_label.pack()
+
+cpu_ships_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+cpu_ships_frame.pack(side=LEFT)
+top_cpu_ships_frame = ttk.Frame(cpu_ships_frame, padding="0 0 0 0")
+top_cpu_ships_frame.pack(side=TOP)
+bot_cpu_ships_frame = ttk.Frame(cpu_ships_frame, padding="0 0 0 0")
+bot_cpu_ships_frame.pack(side=TOP)
+Carrier_CPU_Pic = Label(top_cpu_ships_frame, image=Carrier_CPU_NoHit)
+Carrier_CPU_Pic.pack(side=LEFT)
+Battleship_CPU_Pic = Label(top_cpu_ships_frame, image=Battleship_CPU_NoHit)
+Battleship_CPU_Pic.pack(side=LEFT)
+Destroyer_CPU_Pic = Label(bot_cpu_ships_frame, image=Destroyer_CPU_NoHit)
+Destroyer_CPU_Pic.pack(side=LEFT)
+Submarine_CPU_Pic = Label(bot_cpu_ships_frame, image=Submarine_CPU_NoHit)
+Submarine_CPU_Pic.pack(side=LEFT)
+Patrol_CPU_Pic = Label(bot_cpu_ships_frame, image=Patrol_CPU_NoHit)
+Patrol_CPU_Pic.pack(side=LEFT)
+
+user_ships_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+user_ships_frame.pack(side=LEFT)
+top_user_ships_frame = ttk.Frame(user_ships_frame, padding="0 0 0 0")
+top_user_ships_frame.pack(side=TOP)
+bot_user_ships_frame = ttk.Frame(user_ships_frame, padding="0 0 0 0")
+bot_user_ships_frame.pack(side=TOP)
+Carrier_USER_Pic = Label(top_user_ships_frame, image=Carrier_USER_NoHit)
+Carrier_USER_Pic.pack(side=LEFT)
+Battleship_USER_Pic = Label(top_user_ships_frame, image=Battleship_USER_NoHit)
+Battleship_USER_Pic.pack(side=LEFT)
+Destroyer_USER_Pic = Label(bot_user_ships_frame, image=Destroyer_USER_NoHit)
+Destroyer_USER_Pic.pack(side=LEFT)
+Submarine_USER_Pic = Label(bot_user_ships_frame, image=Submarine_USER_NoHit)
+Submarine_USER_Pic.pack(side=LEFT)
+Patrol_USER_Pic = Label(bot_user_ships_frame, image=Patrol_USER_NoHit)
+Patrol_USER_Pic.pack(side=LEFT)
+
+user_stats_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+user_stats_frame.pack(side=LEFT)
+user_stats_frame_title = ttk.Frame(user_stats_frame, padding="1 1 1 1")
+user_stats_frame_title.pack(side=TOP)
+user_stats_frame_main = ttk.Frame(user_stats_frame, padding="1 1 1 1")
+user_stats_frame_main.pack(side=TOP)
+user_stats_frame_left = ttk.Frame(user_stats_frame_main, padding="1 1 1 1")
+user_stats_frame_left.pack(side=LEFT)
+user_stats_frame_right = ttk.Frame(user_stats_frame_main, padding="1 1 1 1")
+user_stats_frame_right.pack(side=LEFT)
+
+number_of_cpu_hits = 0
+number_of_cpu_misses = 0
+user_label = Label(user_stats_frame_title, text="CPU", font=TitleFont)
+user_label.pack()
+user_label = Label(user_stats_frame_left, text="Hits", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(user_stats_frame_left, text=str(number_of_cpu_hits), font=Counter_Font)
+user_label.pack()
+user_label = Label(user_stats_frame_right, text="Misses", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(user_stats_frame_right, text=str(number_of_cpu_misses), font=Counter_Font)
+user_label.pack()
+
 
 # SetUp Board
 taken_positions = []  # List of Ships positions. Used for CPU placing ships, prevents overlap of ships
@@ -853,10 +1088,10 @@ switch_direction = False
 # Develop Dictionaries based on board size
 positions = get_board_positions()
 if game_mode == 1:
-    btn_dict_cpu_board = get_btn_dict(mainframe, positions, board_size, user_guess)
+    btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
 elif game_mode == 2:
-    btn_dict_cpu_board = get_btn_dict(mainframe, positions, board_size, user_guess)
-    btn_dict_user_board = get_label_dict(rightframe, positions, board_size)
+    btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
+    btn_dict_user_board = get_label_dict(user_ship_frame, positions, board_size)
 
 alpha_to_list = get_alpha_to_list(positions, board_size)
 cpu_ship_list = place_all_ships(user_ship_sizes)
