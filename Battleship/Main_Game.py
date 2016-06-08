@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 from tkinter import ttk
+from tkinter import font
 from tkinter import *
 from random import randint
+#from tkinter import tkFont
 import time
 
 
@@ -50,7 +52,7 @@ class CustomDefaultWindow:
         self.turns = 0
         self.icon_size = 1
         self.ship_size = [5, 4, 3, 3, 2]
-        self.skill_level = "easy"
+        self.skill_level = "hard"
         self.sets = [int(self.board_size), int(self.turns), self.ship_size, self.icon_size, self.game_mode, self.skill_level]
         self.top.destroy()
         root.deiconify()
@@ -151,14 +153,10 @@ class TwoPlayerBoatInput:
         print("Clear Ship")
 
     def submit(self):
-        """ print("Submit")
-        if not self.ships:
-            self.final_user_ships = self.user_ship_positions
-            print(self.final_user_ships)
-        else:
-            print("Invalid Ship Co-ordinates")
-        """
-        self.final_user_ships = [[[0, 0], [0, 1], [0, 2]], [[1, 0], [1, 1], [1, 2]]]
+        self.final_user_ships = [[[9, 0], [9, 1], [9, 2], [9, 3], [9, 4]], [[1, 1], [1, 2], [1, 3], [1, 4]], [[8, 7], [8, 8], [8, 9]],  [[6, 3], [6, 4], [6, 5]], [[3, 6], [3, 7]]]
+        # self.final_user_ships = [[[5, 5], [5, 6], [5, 7]],  [[3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7]]]
+        # self.final_user_ships = [[3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7]]
+        # self.final_user_ships = [[[0, 0], [1, 0]], [[9, 8], [9, 9]], [[9, 0], [9, 1]], [[0, 8], [0, 9]]] # Corners
         print("Submit")
         self.top.destroy()
         root.deiconify()
@@ -294,6 +292,81 @@ class SettingsWindow:
         root.deiconify()
 
 
+class CpuShipSunk:
+
+    def __init__(self, parent):
+        top = self.top = Toplevel(parent)
+        top.wm_attributes("-topmost", 1)
+        #top.minsize(width=100, height=30)
+        #top.maxsize(width=100, height=30)
+        top.after(1000, lambda: top.destroy())  # Destroy the widget after 1 seconds
+        self.Size_Label = Label(top, text='You Have Sunk CPU Ship')
+        self.Size_Label.pack()
+
+
+class UserShipSunk:
+
+    def __init__(self, parent):
+        top = self.top = Toplevel(parent)
+        top.wm_attributes("-topmost", 1)
+        #top.minsize(width=100, height=30)
+        #top.maxsize(width=100, height=30)
+        top.after(1000, lambda: top.destroy())  # Destroy the widget after 1 seconds
+        self.Size_Label = Label(top, text='CPU Has Sunk Your Ship')
+        self.Size_Label.pack()
+
+
+class UserWins:
+
+    def __init__(self, parent):
+        top = self.top = Toplevel(parent)
+        top.wm_attributes("-topmost", 1)
+        #top.minsize(width=100, height=30)
+        #top.maxsize(width=100, height=30)
+        #top.after(3000, lambda: top.destroy())  # Destroy the widget after 3 seconds
+        self.Win_Label = Label(top, text='You WIN!!')
+        self.Win_Label.pack()
+        self.Restart_Button = Button(top, text='Restart', command=self.restart)
+        self.Restart_Button.pack(side=LEFT)
+        self.Close_Button = Button(top, text='Exit', command=self.exit)
+        self.Close_Button.pack(side=LEFT)
+
+    def exit(self):
+        print("exit")
+        root.destroy()
+        # self.top.destroy()
+
+    def restart(self):
+        restart()
+        print("restart")
+
+
+class CPUWins:
+
+    def __init__(self, parent):
+        top = self.top = Toplevel(parent)
+        top.wm_attributes("-topmost", 1)
+        #top.minsize(width=100, height=30)
+        #top.maxsize(width=100, height=30)
+        #top.after(3000, lambda: top.destroy())  # Destroy the widget after 3 seconds
+        self.Lose_Label = Label(top, text='You LOSE!!')
+        self.Lose_Label.pack()
+        self.Restart_Button = Button(top, text='Restart', command=self.restart)
+        self.Restart_Button.pack(side=LEFT)
+        self.Close_Button = Button(top, text='Exit', command=self.exit)
+        self.Close_Button.pack(side=LEFT)
+
+    def exit(self):
+        print("exit")
+        root.destroy()
+        # self.top.destroy()
+
+    def restart(self):
+        restart()
+        print("restart")
+        # on_open()
+
+
 def on_open():
     main_page = CustomDefaultWindow(root)
     root.wait_window(main_page.top)
@@ -303,164 +376,340 @@ def on_open():
         user_boat_position_input = TwoPlayerBoatInput(root)
         root.wait_window(user_boat_position_input.top)
         user_ship_list = user_boat_position_input.final_user_ships
-        print(user_ship_list)
-        print("result from submit^")
     if main_page.custom_bool:
         settings = SettingsWindow(root)
         root.wait_window(settings.top)
-        # user_settings = [settings.sets]
-        user_settings = [int(settings.board_size), int(settings.turns), settings.ship_size, settings.icon_size, settings.skill_level]
+        user_settings = [settings.sets]
 
     return user_settings
 
 
+def sunk_ship(player, ship_number):
+    if player == "user":
+        ship_sunk = user_ship_name_list[ship_number]
+        del(user_ship_name_list[ship_number])
+        if ship_sunk == "Carrier":
+            Carrier_CPU_Pic.configure(image=Carrier_CPU_Hit)
+        elif ship_sunk == "Battleship":
+            Battleship_CPU_Pic.configure(image=Battleship_CPU_Hit)
+        elif ship_sunk == "Destroyer":
+            Destroyer_CPU_Pic.configure(image=Destroyer_CPU_Hit)
+        elif ship_sunk == "Submarine":
+            Submarine_CPU_Pic.configure(image=Submarine_CPU_Hit)
+        elif ship_sunk == "Patrol":
+            Patrol_CPU_Pic.configure(image=Patrol_CPU_Hit)
+
+    elif player == "cpu":
+        ship_sunk = cpu_ship_name_list[ship_number]
+        del (cpu_ship_name_list[ship_number])
+        if ship_sunk == "Carrier":
+            Carrier_USER_Pic.configure(image=Carrier_USER_Hit)
+        elif ship_sunk == "Battleship":
+            Battleship_USER_Pic.configure(image=Battleship_USER_Hit)
+        elif ship_sunk == "Destroyer":
+            Destroyer_USER_Pic.configure(image=Destroyer_USER_Hit)
+        elif ship_sunk == "Submarine":
+            Submarine_USER_Pic.configure(image=Submarine_USER_Hit)
+        elif ship_sunk == "Patrol":
+            Patrol_USER_Pic.configure(image=Patrol_USER_Hit)
+
+
 def user_guess(pos):
     guess = alpha_to_list[pos]
-    hit = 0
-    hit_ship = 0
-    guess_row = guess[0]
-    guess_col = guess[1]
-    if board_cpu_visual[guess_row][guess_col] == "X":
+    hit_bool = False
+    game_over = False
+    for ship in range(len(cpu_ship_list)):
+        if guess in cpu_ship_list[ship]:
+            hit_bool = True
+            print("You hit CPU's battleships!")
+            cpu_ship_list[ship].remove(guess)
+            if not cpu_ship_list[ship]:
+                print("You sunk CPU's ship")
+                test_page = CpuShipSunk(root)
+                root.wait_window(test_page.top)
+                sunk_ship("user", ship)
+                del(cpu_ship_list[ship])
+                print(cpu_ship_list)
+            break
+    """if guess in cpu_ship_list:
         hit_bool = True
-        print("You hit my battleships!")
-        for c in range(len(cpu_ship_list)):
-            for d in range(len(cpu_ship_list[c])):
-                ship = cpu_ship_list[c]
-                current_ship_pos = ship[d]
-                if guess == current_ship_pos:
-                    hit = 1
-                    hit_ship = c
-                    break
-        if hit == 1:
-            cpu_ship_list[hit_ship].remove(guess)
+        print("You hit CPU's battleships!")
+        cpu_ship_list.remove(guess)"""
+    if not cpu_ship_list:
+        print("You sunk all CPU's ships")
+        game_over = True
+        test_page = UserWins(root)
+        root.wait_window(test_page.top)
 
-    else:
-        hit_bool = False
-        if board_cpu[guess_row][guess_col] == "M" or board_cpu[guess_row][guess_col] == "H":
-            print("You guessed that one already.")
+    if not game_over:
+        if hit_bool:
+            btn_dict_cpu_board[pos].configure(image=hit_pic)
         else:
-            print("You missed my battleships!")
-            board_cpu[guess_row][guess_col] = "M"
+            btn_dict_cpu_board[pos].configure(image=miss_pic)
 
-    print(pos)
+    if game_mode == 2:
+        while True:
+            if skill_level == "easy":
+                new_cpu_guess = random_pos()
+            elif skill_level == "medium":
+                new_cpu_guess = cpu_medium_guess()
+            elif skill_level == "hard":
+                new_cpu_guess = cpu_hard_guess()
+            if new_cpu_guess not in cpu_prev_guess:
+                break
 
-    if hit_bool:
-        btn_dict_cpu_board[pos].configure(image=hit_pic)
-    else:
-        btn_dict_cpu_board[pos].configure(image=miss_pic)
-
-    time.sleep(1) # Wait 2 seconds
-
-    if skill_level == "easy":
-        new_cpu_guess = random_pos()
-    elif skill_level == "medium":
-        new_cpu_guess = cpu_medium_guess
-
-
-    if new_cpu_guess not in cpu_prev_guess:
+        # print("new cpu guess: ", new_cpu_guess)
         cpu_prev_guess.append(new_cpu_guess)
-        cpu_random_guess(new_cpu_guess)
+        cpu_guess(new_cpu_guess)
 
-    print(cpu_prev_guess)
+    # print("prev cpu guesses: ", cpu_prev_guess)
 
-"""
-def cpu_guess(pos):
-    guess = alpha_to_list[pos]
-    hit = 0
-    hit_ship = 0
-    guess_row = guess[0]
-    guess_col = guess[1]
-    if board_user_visual[guess_row][guess_col] == "X":
-        hit_bool = True
-        print("You hit my battleships!")
-        for c in range(len(cpu_ship_list)):
-            for d in range(len(cpu_ship_list[c])):
-                ship = cpu_ship_list[c]
-                current_ship_pos = ship[d]
-                if guess == current_ship_pos:
-                    hit = 1
-                    hit_ship = c
-                    break
-        if hit == 1:
-            cpu_ship_list[hit_ship].remove(guess)
 
-    else:
-        hit_bool = False
-        if board_user[guess_row][guess_col] == "M" or board_user[guess_row][guess_col] == "H":
-            print("You guessed that one already.")
-        else:
-            print("You missed my battleships!")
-            board_user[guess_row][guess_col] = "M"
-
-    if hit_bool:
-        btn_dict_user_board[pos].configure(image=hit_pic)
-    else:
-        btn_dict_user_board[pos].configure(image=miss_pic)
-"""
-
-def cpu_random_guess(cpu_position_guess):
+def cpu_guess(cpu_position_guess):
     letter_guess = list_to_alpha(cpu_position_guess)
-    print(cpu_position_guess)
     guess = cpu_position_guess
-    hit = 0
-    hit_ship = 0
-    guess_row = guess[0]
-    guess_col = guess[1]
-    if board_user_visual[guess_row][guess_col] == "X":
+    print("guess:", guess)
+    global cpu_hit_not_sunk
+    global cpu_prev_result
+    global cpu_hit_ship_pos
+    global smallest_ship_remaining
+    hit_bool = False
+    cpu_prev_result = "miss"
+
+    for ship in range(len(user_ship_list)):
+        if guess in user_ship_list[ship]:
+            hit_bool = True
+            cpu_hit_ship_pos.append(guess)
+            print("CPU hit your battleships!")
+            cpu_prev_result = "hit"
+            cpu_hit_not_sunk = True
+            user_ship_list[ship].remove(guess)
+            if not user_ship_list[ship]:
+                cpu_hit_not_sunk = False
+                cpu_hit_ship_pos = []
+                print("CPU sunk your ship")
+                test_page = UserShipSunk(root)
+                root.wait_window(test_page.top)
+                sunk_ship("cpu", ship)
+                del (user_ship_list[ship])
+                smallest_ship_remaining = 5
+                for ship in range(len(user_ship_list)):
+                    if len(user_ship_list[ship]) < smallest_ship_remaining:
+                        smallest_ship_remaining = len(user_ship_list[ship])
+                        ### Need to see if above works if hit another ship side by side
+                break
+
+    if guess in user_ship_list:
         hit_bool = True
-        print("You hit my battleships!")
-        for c in range(len(cpu_ship_list)):
-            for d in range(len(cpu_ship_list[c])):
-                ship = cpu_ship_list[c]
-                current_ship_pos = ship[d]
-                if guess == current_ship_pos:
-                    hit = 1
-                    hit_ship = c
-                    break
-        if hit == 1:
-            cpu_ship_list[hit_ship].remove(guess)
-
-    else:
-        hit_bool = False
-        if board_user[guess_row][guess_col] == "M" or board_user[guess_row][guess_col] == "H":
-            print("You guessed that one already.")
-        else:
-            print("You missed my battleships!")
-            board_user[guess_row][guess_col] = "M"
-
-    # print("letter_guess:", letter_guess)
-
+        cpu_hit_not_sunk = True
+        cpu_hit_ship_pos.append(guess)
+        cpu_prev_result = "hit"
+        print("CPU hit your battleship!")
+        user_ship_list.remove(guess)
+        if not user_ship_list:
+            cpu_hit_not_sunk = False
+            cpu_hit_ship_pos = []
+            print("CPU sunk all your ships")
+            test_page = CPUWins(root)
+            root.wait_window(test_page.top)
 
     if hit_bool:
-        # btn_dict_user_board[pos].configure(image=hit_pic)
         btn_dict_user_board[letter_guess].configure(image=hit_pic)
     else:
-        # btn_dict_user_board[pos].configure(image=miss_pic)
         btn_dict_user_board[letter_guess].configure(image=miss_pic)
 
 
-def print_cpu_ship(cpu_ship):
-    for l in cpu_ship:
-        board_cpu_visual[l[0]][l[1]] = "X"
+def cpu_medium_guess():
+    global cpu_prev_hit_dir
+    global failed_dir
+    global switch_direction
+    global last_cpu_hit
+
+    if cpu_hit_not_sunk:  # variable that ship is hit but not sunk
+        if len(cpu_hit_ship_pos) == 1:
+            prev_col = cpu_hit_ship_pos[len(cpu_hit_ship_pos) - 1][1]
+            prev_row = cpu_hit_ship_pos[len(cpu_hit_ship_pos) - 1][0]
+            att_dir = rand_dir[randint(0, 3)]
+
+            # If initial hit position is a Corner
+            if prev_row == 0 and prev_col == 0:
+                while att_dir == "up" or att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == 0 and prev_col == board_size_zero:
+                while att_dir == "up" or att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero and prev_col == 0:
+                while att_dir == "down" or att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero and prev_col == board_size_zero:
+                while att_dir == "down" or att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == 0 or att_dir in failed_dir:
+                while att_dir == "up" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero or att_dir in failed_dir:
+                while att_dir == "down" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_col == board_size_zero or att_dir in failed_dir:
+                while att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_col == 0 or att_dir in failed_dir:
+                while att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+
+            if att_dir == "up":
+                next_cpu_guess = [prev_row - 1,  prev_col]
+                cpu_prev_hit_dir.append("up")
+            elif att_dir == "down":
+                next_cpu_guess = [prev_row + 1,  prev_col]
+                cpu_prev_hit_dir.append("down")
+            elif att_dir == "left":
+                next_cpu_guess = [prev_row,  prev_col - 1]
+                cpu_prev_hit_dir.append("left")
+            elif att_dir == "right":
+                next_cpu_guess = [prev_row,  prev_col + 1]
+                cpu_prev_hit_dir.append("right")
+
+        else:
+            found_ship_direction = cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1]
+            if cpu_prev_result == "hit" or switch_direction:
+                switch_direction = False
+                if not switch_direction:
+                    last_cpu_hit = cpu_hit_ship_pos[len(cpu_hit_ship_pos)-1] ####MIMIC
+                prev_row = last_cpu_hit[0]     #### Seems to MIMIC above
+                prev_col = last_cpu_hit[1] ### MIMIC
+                if found_ship_direction == "up":
+                    next_cpu_guess = [prev_row - 1, prev_col]
+                if found_ship_direction == "down":
+                    next_cpu_guess = [prev_row + 1, prev_col]
+                if found_ship_direction == "left":
+                    next_cpu_guess = [prev_row, prev_col - 1]
+                if found_ship_direction == "right":
+                    next_cpu_guess = [prev_row, prev_col + 1]
+            else:
+                last_cpu_hit = cpu_hit_ship_pos[0]
+                prev_row = last_cpu_hit[0]
+                prev_col = last_cpu_hit[1]
+                switch_direction = True
+                if found_ship_direction == "up":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "down"
+                    next_cpu_guess = [prev_row + 1, prev_col]
+                elif found_ship_direction == "down":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "up"
+                    next_cpu_guess = [prev_row - 1, prev_col]
+                elif found_ship_direction == "left":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "right"
+                    next_cpu_guess = [prev_row, prev_col + 1]
+                elif found_ship_direction == "right":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "left"
+                    next_cpu_guess = [prev_row, prev_col - 1]
+    else:
+        next_cpu_guess = random_pos()
+
+    return next_cpu_guess
 
 
-def print_user_ship(user_ship):
-    for l in user_ship:
-        board_user_visual[l[0]][l[1]] = "X"
+def cpu_hard_guess():
+    global cpu_prev_hit_dir
+    global failed_dir
+    global switch_direction
+    global last_cpu_hit
 
+    if cpu_hit_not_sunk:  # variable that ship is hit but not sunk
+        if len(cpu_hit_ship_pos) == 1:
+            prev_col = cpu_hit_ship_pos[len(cpu_hit_ship_pos) - 1][1]
+            prev_row = cpu_hit_ship_pos[len(cpu_hit_ship_pos) - 1][0]
+            att_dir = rand_dir[randint(0, 3)]
 
-def print_board(board_to_print):
-    s = ' '
-    for row in board_to_print:
-        print(s.join(row))
+            # If initial hit position is a Corner
+            if prev_row == 0 and prev_col == 0:
+                while att_dir == "up" or att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == 0 and prev_col == board_size_zero:
+                while att_dir == "up" or att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero and prev_col == 0:
+                while att_dir == "down" or att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero and prev_col == board_size_zero:
+                while att_dir == "down" or att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == 0 or att_dir in failed_dir:
+                while att_dir == "up" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_row == board_size_zero or att_dir in failed_dir:
+                while att_dir == "down" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_col == board_size_zero or att_dir in failed_dir:
+                while att_dir == "right" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
+            elif prev_col == 0 or att_dir in failed_dir:
+                while att_dir == "left" or att_dir in failed_dir:
+                    att_dir = rand_dir[randint(0, 3)]
 
+            if att_dir == "up":
+                next_cpu_guess = [prev_row - 1,  prev_col]
+                cpu_prev_hit_dir.append("up")
+            elif att_dir == "down":
+                next_cpu_guess = [prev_row + 1,  prev_col]
+                cpu_prev_hit_dir.append("down")
+            elif att_dir == "left":
+                next_cpu_guess = [prev_row,  prev_col - 1]
+                cpu_prev_hit_dir.append("left")
+            elif att_dir == "right":
+                next_cpu_guess = [prev_row,  prev_col + 1]
+                cpu_prev_hit_dir.append("right")
 
-def user_sizes(how_many_ships):
-    user_ship_sizes_func = []
-    while how_many_ships > 0:
-        user_ship_sizes_func.append(int(input("Size of Each Ship(Largest First):")))
-        how_many_ships -= 1
-    return user_ship_sizes_func
+        else:
+            found_ship_direction = cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1]
+            if cpu_prev_result == "hit" or switch_direction:
+                switch_direction = False
+                if not switch_direction:
+                    last_cpu_hit = cpu_hit_ship_pos[len(cpu_hit_ship_pos)-1] ####MIMIC
+                prev_row = last_cpu_hit[0]     #### Seems to MIMIC above
+                prev_col = last_cpu_hit[1] ### MIMIC
+                if found_ship_direction == "up":
+                    next_cpu_guess = [prev_row - 1, prev_col]
+                if found_ship_direction == "down":
+                    next_cpu_guess = [prev_row + 1, prev_col]
+                if found_ship_direction == "left":
+                    next_cpu_guess = [prev_row, prev_col - 1]
+                if found_ship_direction == "right":
+                    next_cpu_guess = [prev_row, prev_col + 1]
+            else:
+                last_cpu_hit = cpu_hit_ship_pos[0]
+                prev_row = last_cpu_hit[0]
+                prev_col = last_cpu_hit[1]
+                switch_direction = True
+                if found_ship_direction == "up":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "down"
+                    next_cpu_guess = [prev_row + 1, prev_col]
+                elif found_ship_direction == "down":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "up"
+                    next_cpu_guess = [prev_row - 1, prev_col]
+                elif found_ship_direction == "left":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "right"
+                    next_cpu_guess = [prev_row, prev_col + 1]
+                elif found_ship_direction == "right":
+                    cpu_prev_hit_dir[len(cpu_prev_hit_dir) - 1] = "left"
+                    next_cpu_guess = [prev_row, prev_col - 1]
+    else:
+        while True:
+            next_cpu_guess = random_pos()
+            next_cpu_row = next_cpu_guess[0]
+            next_cpu_col = next_cpu_guess[1]
+            redo = "no"
+            for prev_guess in cpu_prev_guess:
+                prev_cpu_row = prev_guess[0]
+                prev_cpu_col = prev_guess[1]
+                if next_cpu_row == prev_cpu_row and abs(next_cpu_col - prev_cpu_col) == smallest_ship_remaining - 1:
+                    redo = "yes"
+                elif next_cpu_col == prev_cpu_col and abs(next_cpu_row - prev_cpu_row) == smallest_ship_remaining - 1:
+                    redo = "yes"
+            if redo == "no":
+                break
+
+    return next_cpu_guess
 
 
 def direction(initial_position, size):
@@ -545,7 +794,6 @@ def place_all_ships(ship_sizes):
         for i in ship_next:
             taken_positions.append(i)
         del(ship_sizes[0])
-        print_cpu_ship(ships[b])
         b += 1
     return ships
 
@@ -553,8 +801,6 @@ def place_all_ships(ship_sizes):
 def get_board_positions():
     positions_func = []
     i = 0
-    let_to_words = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K',
-                    11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T'}
     while i < board_size:
         j = 0
         while j < board_size:
@@ -589,7 +835,7 @@ def get_label_dict(label_frame, positions_func, board_size_func):
     for pos in positions_func:
         # create the buttons and assign to pos:button-object dict pair
         lbl_dict_func[pos] = Label(label_frame, image=ocean_pic)
-        lbl_dict_func[pos].grid(row=r, column=c, pady=0, padx=0)
+        lbl_dict_func[pos].grid(row=r, column=c, pady=1, padx=1)
         c += 1
         if c == board_size_func + 1:
             c = 1
@@ -600,12 +846,7 @@ def get_label_dict(label_frame, positions_func, board_size_func):
 def list_to_alpha(num_pos):
     num_pos_row = num_pos[0]
     num_pos_col = num_pos[1]
-
-    let_to_words = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K',
-                    11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T'}
-
     alpha_pos = let_to_words[num_pos_row] + str(num_pos_col + 1)
-
     return alpha_pos
 
 
@@ -634,20 +875,65 @@ def icon(icon_decision):
     return [ocean_picture, hit_picture, miss_picture]
 
 
+def restart():
+
+    #CHECK WHAT GETS CHANGED. THEN RESET THOSE VALUES.
+    global user_ship_list
+    user_ship_list = []
+    info = on_open()
+    board_size = info[0]
+    turns = info[1]
+    user_ship_sizes = info[2]
+    icon_setting = info[3]
+    game_mode = info[4]
+    skill_level = info[5]
+    board_size_zero = board_size - 1
+    ocean_pic, hit_pic, miss_pic = icon(icon_setting)
+    taken_positions = []  # List of Ships positions. Used for CPU placing ships, prevents overlap of ships
+    cpu_prev_guess = []  # List of positions the cpu has guest
+    cpu_hit_ship_pos = []
+    cpu_prev_result = ""  # Holds results of last cpu guess
+    cpu_hit_not_sunk = False
+    cpu_prev_hit_dir = []
+    failed_dir = []
+    last_cpu_hit = []
+    smallest_ship_remaining = 2
+    switch_direction = False
+
+    positions = get_board_positions()
+
+    if game_mode == 1:
+        btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
+    elif game_mode == 2:
+        btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
+        btn_dict_user_board = get_label_dict(user_ship_frame, positions, board_size)
+
+    alpha_to_list = get_alpha_to_list(positions, board_size)
+    cpu_ship_list = place_all_ships(user_ship_sizes)
+
+    print("CPU SHIPS: ", cpu_ship_list)
+    print("Player SHIPS: ", user_ship_list)
+    num_ships_sunk = 0
+
+
 root = Tk()
 root.title("Battleship")
+root.configure(background='black')
 
-mainframe = ttk.Frame(root, padding="10 10 10 10")
-mainframe.pack(side=LEFT)
-# mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
+upperframe = ttk.Frame(root, padding="1 1 1 1")
+upperframe.pack(side=TOP)
+upperframe.columnconfigure(0, weight=1)
+upperframe.rowconfigure(0, weight=1)
 
-rightframe = ttk.Frame(root, padding="10 10 10 10")
-# rightframe.grid(column=0, row=0, sticky=(N, W, E, S))
-rightframe.pack(side=LEFT)
-rightframe.columnconfigure(0, weight=1)
-rightframe.rowconfigure(0, weight=1)
+cpu_ship_frame = ttk.Frame(root, padding="10 10 10 10")
+cpu_ship_frame.pack(side=LEFT)
+cpu_ship_frame.columnconfigure(0, weight=1)
+cpu_ship_frame.rowconfigure(0, weight=1)
+
+user_ship_frame = ttk.Frame(root, padding="10 10 10 10")
+user_ship_frame.pack(side=LEFT)
+user_ship_frame.columnconfigure(0, weight=1)
+user_ship_frame.rowconfigure(0, weight=1)
 
 # Game Info #
 user_ship_list = []
@@ -657,41 +943,163 @@ turns = info[1]
 user_ship_sizes = info[2]
 icon_setting = info[3]
 game_mode = info[4]
-skill_level = "easy"
+skill_level = info[5]
 board_size_zero = board_size - 1
 ocean_pic, hit_pic, miss_pic = icon(icon_setting)
+cpu_ship_name_list = ["Carrier", "Battleship", "Destroyer", "Submarine", "Patrol" ]
+user_ship_name_list = ["Carrier", "Battleship", "Destroyer", "Submarine", "Patrol" ]
+
+# Upper Game Labels
+"""
+label_frame = ttk.Frame(upperframe, padding="1 1 1 1")
+label_frame.pack(side=TOP)
+CPU_label = Label(label_frame, text="CPU SHIPS", padx=150)
+CPU_label.pack(side=LEFT)
+USER_label = Label(label_frame, text="User SHIPS", padx=150)
+USER_label.pack(side=LEFT)
+"""
+
+Carrier_CPU_NoHit = PhotoImage(file="Aircraft_carrier_5_cpu.gif")
+Battleship_CPU_NoHit = PhotoImage(file="Battleship_4_cpu.gif")
+Destroyer_CPU_NoHit = PhotoImage(file="Destroyer_3_cpu.gif")
+Submarine_CPU_NoHit = PhotoImage(file="Submarine_3_cpu.gif")
+Patrol_CPU_NoHit = PhotoImage(file="Patrol_Boat_2_cpu.gif")
+Carrier_USER_NoHit = PhotoImage(file="Aircraft_carrier_5_user.gif")
+Battleship_USER_NoHit = PhotoImage(file="Battleship_4_user.gif")
+Destroyer_USER_NoHit = PhotoImage(file="Destroyer_3_user.gif")
+Submarine_USER_NoHit = PhotoImage(file="Submarine_3_user.gif")
+Patrol_USER_NoHit = PhotoImage(file="Patrol_Boat_2_user.gif")
+Carrier_CPU_Hit = PhotoImage(file="Aircraft_carrier_5_cpu_hit.gif")
+Battleship_CPU_Hit = PhotoImage(file="Battleship_4_cpu_hit.gif")
+Destroyer_CPU_Hit = PhotoImage(file="Destroyer_3_cpu_hit.gif")
+Submarine_CPU_Hit = PhotoImage(file="Submarine_3_cpu_hit.gif")
+Patrol_CPU_Hit = PhotoImage(file="Patrol_Boat_2_cpu_hit.gif")
+Carrier_USER_Hit = PhotoImage(file="Aircraft_carrier_5_user_hit.gif")
+Battleship_USER_Hit = PhotoImage(file="Battleship_4_user_hit.gif")
+Destroyer_USER_Hit = PhotoImage(file="Destroyer_3_user_hit.gif")
+Submarine_USER_Hit = PhotoImage(file="Submarine_3_user_hit.gif")
+Patrol_USER_Hit = PhotoImage(file="Patrol_Boat_2_user_hit.gif")
+
+info_frame = ttk.Frame(upperframe, padding="1 1 1 1")
+info_frame.pack(side=TOP)
+
+
+cpu_stats_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+cpu_stats_frame.pack(side=LEFT)
+cpu_stats_frame_title = ttk.Frame(cpu_stats_frame, padding="1 1 1 1")
+cpu_stats_frame_title.pack(side=TOP)
+cpu_stats_frame_main = ttk.Frame(cpu_stats_frame, padding="1 1 1 1")
+cpu_stats_frame_main.pack(side=TOP)
+cpu_stats_frame_left = ttk.Frame(cpu_stats_frame_main, padding="1 1 1 1")
+cpu_stats_frame_left.pack(side=LEFT)
+cpu_stats_frame_right = ttk.Frame(cpu_stats_frame_main, padding="1 1 1 1")
+cpu_stats_frame_right.pack(side=LEFT)
+
+number_of_user_hits = 0
+number_of_user_misses = 0
+TitleFont = font.Font(family='Helvetica', size=30, weight='bold', underline=1)
+Hit_Miss_Font = font.Font(family='Times', size=17, weight='bold', underline=1)
+Counter_Font = font.Font(family='Times', size=13)
+user_label = Label(cpu_stats_frame_title, text="User", font=TitleFont)
+user_label.pack()
+user_label = Label(cpu_stats_frame_left, text="Hits", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(cpu_stats_frame_left, text=str(number_of_user_hits), font=Counter_Font)
+user_label.pack()
+user_label = Label(cpu_stats_frame_right, text="Misses", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(cpu_stats_frame_right, text=str(number_of_user_misses), font=Counter_Font)
+user_label.pack()
+
+cpu_ships_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+cpu_ships_frame.pack(side=LEFT)
+top_cpu_ships_frame = ttk.Frame(cpu_ships_frame, padding="0 0 0 0")
+top_cpu_ships_frame.pack(side=TOP)
+bot_cpu_ships_frame = ttk.Frame(cpu_ships_frame, padding="0 0 0 0")
+bot_cpu_ships_frame.pack(side=TOP)
+Carrier_CPU_Pic = Label(top_cpu_ships_frame, image=Carrier_CPU_NoHit)
+Carrier_CPU_Pic.pack(side=LEFT)
+Battleship_CPU_Pic = Label(top_cpu_ships_frame, image=Battleship_CPU_NoHit)
+Battleship_CPU_Pic.pack(side=LEFT)
+Destroyer_CPU_Pic = Label(bot_cpu_ships_frame, image=Destroyer_CPU_NoHit)
+Destroyer_CPU_Pic.pack(side=LEFT)
+Submarine_CPU_Pic = Label(bot_cpu_ships_frame, image=Submarine_CPU_NoHit)
+Submarine_CPU_Pic.pack(side=LEFT)
+Patrol_CPU_Pic = Label(bot_cpu_ships_frame, image=Patrol_CPU_NoHit)
+Patrol_CPU_Pic.pack(side=LEFT)
+
+user_ships_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+user_ships_frame.pack(side=LEFT)
+top_user_ships_frame = ttk.Frame(user_ships_frame, padding="0 0 0 0")
+top_user_ships_frame.pack(side=TOP)
+bot_user_ships_frame = ttk.Frame(user_ships_frame, padding="0 0 0 0")
+bot_user_ships_frame.pack(side=TOP)
+Carrier_USER_Pic = Label(top_user_ships_frame, image=Carrier_USER_NoHit)
+Carrier_USER_Pic.pack(side=LEFT)
+Battleship_USER_Pic = Label(top_user_ships_frame, image=Battleship_USER_NoHit)
+Battleship_USER_Pic.pack(side=LEFT)
+Destroyer_USER_Pic = Label(bot_user_ships_frame, image=Destroyer_USER_NoHit)
+Destroyer_USER_Pic.pack(side=LEFT)
+Submarine_USER_Pic = Label(bot_user_ships_frame, image=Submarine_USER_NoHit)
+Submarine_USER_Pic.pack(side=LEFT)
+Patrol_USER_Pic = Label(bot_user_ships_frame, image=Patrol_USER_NoHit)
+Patrol_USER_Pic.pack(side=LEFT)
+
+user_stats_frame = ttk.Frame(info_frame, padding="1 1 1 1")
+user_stats_frame.pack(side=LEFT)
+user_stats_frame_title = ttk.Frame(user_stats_frame, padding="1 1 1 1")
+user_stats_frame_title.pack(side=TOP)
+user_stats_frame_main = ttk.Frame(user_stats_frame, padding="1 1 1 1")
+user_stats_frame_main.pack(side=TOP)
+user_stats_frame_left = ttk.Frame(user_stats_frame_main, padding="1 1 1 1")
+user_stats_frame_left.pack(side=LEFT)
+user_stats_frame_right = ttk.Frame(user_stats_frame_main, padding="1 1 1 1")
+user_stats_frame_right.pack(side=LEFT)
+
+number_of_cpu_hits = 0
+number_of_cpu_misses = 0
+user_label = Label(user_stats_frame_title, text="CPU", font=TitleFont)
+user_label.pack()
+user_label = Label(user_stats_frame_left, text="Hits", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(user_stats_frame_left, text=str(number_of_cpu_hits), font=Counter_Font)
+user_label.pack()
+user_label = Label(user_stats_frame_right, text="Misses", font=Hit_Miss_Font)
+user_label.pack()
+user_label = Label(user_stats_frame_right, text=str(number_of_cpu_misses), font=Counter_Font)
+user_label.pack()
+
 
 # SetUp Board
-board_cpu = []
-board_cpu_visual = []
-board_user = []
-board_user_visual = []
-taken_positions = []
-cpu_prev_guess = []
-for x in range(board_size):
-    board_cpu.append(["O"] * board_size)
-    board_cpu_visual.append(["O"] * board_size)
-    board_user.append(["O"] * board_size)
-    board_user_visual.append(["O"] * board_size)
+taken_positions = []  # List of Ships positions. Used for CPU placing ships, prevents overlap of ships
+cpu_prev_guess = []  # List of positions the cpu has guest
+cpu_hit_ship_pos = []
+cpu_prev_result = ""  # Holds results of last cpu guess
+cpu_hit_not_sunk = False  # True when cpu has hit a ship but has not sunk it
+rand_dir = ["up", "down", "left", "right"]
+let_to_words = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K',
+                11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U'}
+cpu_prev_hit_dir = []
+failed_dir = []
+last_cpu_hit = []
+smallest_ship_remaining = 2
+switch_direction = False
 
 # Develop Dictionaries based on board size
 positions = get_board_positions()
 if game_mode == 1:
-    btn_dict_cpu_board = get_btn_dict(mainframe, positions, board_size, user_guess)
+    btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
 elif game_mode == 2:
-    btn_dict_cpu_board = get_btn_dict(mainframe, positions, board_size, user_guess)
-    btn_dict_user_board = get_label_dict(rightframe, positions, board_size)
-    # print(user_ship_list)
-    for user_ship in user_ship_list:
-        print_user_ship(user_ship)
+    btn_dict_cpu_board = get_btn_dict(cpu_ship_frame, positions, board_size, user_guess)
+    btn_dict_user_board = get_label_dict(user_ship_frame, positions, board_size)
 
 alpha_to_list = get_alpha_to_list(positions, board_size)
 cpu_ship_list = place_all_ships(user_ship_sizes)
 
-# user_ship_list = []  # Must link to
 print("CPU SHIPS: ", cpu_ship_list)
 print("Player SHIPS: ", user_ship_list)
 num_ships_sunk = 0
 
 # run the GUI event loop
 root.mainloop()
+
